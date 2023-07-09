@@ -52,6 +52,7 @@ class DroneController:
             self.drone.rotate_clockwise(round(degrees))
         
         self.last_rotation = { "x": last_rotation["x"], "y": last_rotation["y"]}
+        self.last_movement = { "x": 0, "y": 0, "z": 0 }
 
     def land(self):
         print(f"< landing... >")

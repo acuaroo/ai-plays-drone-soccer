@@ -1,12 +1,12 @@
 import pygame
-import mockcontroller
+import controller
 import math
 
 pygame.init()
 pygame.joystick.init()
 
 # prep the drone
-drone_controller = mockcontroller.DroneController()
+drone_controller = controller.DroneController()
 drone_controller.connect()
 drone_controller.set_speed(20)
 
@@ -22,7 +22,10 @@ button_map = {
 }
 
 def joystick_to_degrees(axis2_value, axis3_value):
-    angle = math.atan2(axis3_value, axis2_value)
+    if axis2_value == 0 and axis3_value == 0:
+        return 0
+    
+    angle = math.atan2(axis2_value, axis3_value)
 
     degrees = math.degrees(angle)
     degrees = (degrees + 360) % 360
