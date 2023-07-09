@@ -1,12 +1,12 @@
 import pygame
-import controller
+import mockcontroller
 import math
 
 pygame.init()
-joysticks = []
+pygame.joystick.init()
 
 # prep the drone
-drone_controller = controller.DroneController()
+drone_controller = mockcontroller.DroneController()
 drone_controller.connect()
 drone_controller.set_speed(20)
 
@@ -22,9 +22,9 @@ button_map = {
 }
 
 def joystick_to_degrees(axis2_value, axis3_value):
-    angle = math.atan2(axis2_value, axis3_value)
+    angle = math.atan2(axis3_value, axis2_value)
 
-    degrees = math.degrees(angle)    
+    degrees = math.degrees(angle)
     degrees = (degrees + 360) % 360
 
     return degrees
@@ -32,10 +32,12 @@ def joystick_to_degrees(axis2_value, axis3_value):
 def hround(number):
     return round(number * 2) / 2
 
-# look and get all joysticks
-for i in range(pygame.joystick.get_count()):
-    joysticks.append(pygame.joystick.Joystick(i))
-    joysticks[-1].init()
+if pygame.joystick.get_count() <= 0:
+    print("< no joysticks found, stopping... >")
+    exit()
+
+joystick = pygame.joystick.Joystick(0)
+joystick.init()
 
 while alive:
     clock.tick(60)
@@ -72,5 +74,7 @@ while alive:
 
         drone_controller.move(movement["x"], movement["y"], movement["z"])
     elif rotation != drone_controller.last_rotation:
+        print(rotation["x"], rotation["y"])
+
         final_rotation = joystick_to_degrees(rotation["x"], rotation["y"])
         drone_controller.rotate(final_rotation, rotation)
