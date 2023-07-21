@@ -1,4 +1,5 @@
 from djitellopy import tello
+from time import sleep
 import cv2
 
 class DroneController:
