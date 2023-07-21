@@ -1,6 +1,13 @@
 from djitellopy import tello
 from time import sleep
+from pygame.locals import *
+
+import pygame
 import cv2
+
+pygame.init()
+pygame.joystick.init()
+
 
 class DroneController:
     def __init__(self):
@@ -10,6 +17,8 @@ class DroneController:
         self.speed = 0
         self.last_movement = { "x": 0, "y": 0, "z": 0 }
         self.last_rotation = { "x": 0, "y": 0 }
+
+        self.rumble_intensity = 6000
 
         self.last_z_request = None
         self.last_x_request = None
@@ -41,6 +50,12 @@ class DroneController:
         print(f"< taking off... >")
 
         self.drone.takeoff()
+        if pygame.joystick.get_count() > 0:
+            # rumble controller to let pilot know they can know move
+            joystick = pygame.joystick.Joystick(0)
+            joystick.init()
+
+            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 2)
 
     def move(self, x=0, y=0, z=0, yaw=0):
         self.drone.send_rc_control(int(x * self.speed), int(z * self.speed), int(y* self.speed), yaw)
