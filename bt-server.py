@@ -6,7 +6,7 @@ pygame.init()
 pygame.joystick.init()
 
 # prep the drone
-drone_controller = controller.DroneController()
+drone_controller = controller.DroneController("FAKESESSIONID")
 drone_controller.connect()
 drone_controller.set_speed(30)
 
@@ -15,6 +15,9 @@ alive = True
 
 movement = { "x": 0, "y": 0, "z": 0 }
 rotation = { "x": 0, "y": 0 }
+
+image_interval = 1
+last_image_time = 0
 
 button_map = {
     "2": drone_controller.takeoff,
@@ -81,3 +84,10 @@ while alive:
 
         final_rotation = joystick_to_degrees(rotation["x"], rotation["y"])
         drone_controller.rotate(final_rotation, rotation)
+    
+    current_time = time.time()
+    
+    if current_time - last_image_time >= image_interval:
+        last_image_time = current_time
+
+        
