@@ -1,9 +1,19 @@
 import pygame
 import controller
 import math
+import time
+
+from threading import Thread
 
 pygame.init()
 pygame.joystick.init()
+
+if pygame.joystick.get_count() <= 0:
+    print("< no joysticks found, stopping... >")
+    exit()
+
+joystick = pygame.joystick.Joystick(0)
+joystick.init()
 
 # prep the drone
 drone_controller = controller.DroneController("FAKESESSIONID")
@@ -12,11 +22,12 @@ drone_controller.set_speed(30)
 
 clock = pygame.time.Clock()
 alive = True
+stall_thread = None
 
 movement = { "x": 0, "y": 0, "z": 0 }
 rotation = { "x": 0, "y": 0 }
 
-image_interval = 1
+image_interval = 10
 last_image_time = 0
 
 button_map = {
@@ -38,12 +49,7 @@ def joystick_to_degrees(axis2_value, axis3_value):
 def hround(number):
     return round(number * 2) / 2
 
-if pygame.joystick.get_count() <= 0:
-    print("< no joysticks found, stopping... >")
-    exit()
-
-joystick = pygame.joystick.Joystick(0)
-joystick.init()
+drone_controller.streamon()
 
 while alive:
     clock.tick(60)
@@ -85,9 +91,10 @@ while alive:
         final_rotation = joystick_to_degrees(rotation["x"], rotation["y"])
         drone_controller.rotate(final_rotation, rotation)
     
-    current_time = time.time()
+    # current_time = time.time()
     
-    if current_time - last_image_time >= image_interval:
-        last_image_time = current_time
+    # if current_time - last_image_time >= image_interval:
+    #     last_image_time = current_time
 
-        
+    #     if not drone_controller.processing:
+    #         drone_controller.record_picture()
