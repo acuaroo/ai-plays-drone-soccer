@@ -38,6 +38,12 @@ button_map = {
 def hround(number):
     return round(number * 2) / 2
 
+def turn_to_tertiary(x):
+    if x == -1:
+        return 2
+    
+    return x
+
 drone_controller.streamon()
 
 while alive:
@@ -71,3 +77,11 @@ while alive:
         
     if movement != drone_controller.last_movement or rotation != drone_controller.last_rotation:
         drone_controller.move(movement["x"], movement["y"], movement["z"], rotation)
+
+        converted_movement = dict(map(lambda x: (x[0], turn_to_tertiary(x[1])), movement.items()))
+        converted_rotation = turn_to_tertiary(rotation)
+
+        movement_string = f"{converted_movement['x']}_{converted_movement['y']}_{converted_movement['z']}_{converted_rotation}"
+        
+        with open("drone_stream.txt", "w") as file:
+            file.write(movement_string)
