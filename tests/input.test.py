@@ -28,18 +28,20 @@ for i in range(0, pygame.joystick.get_count()):
     joysticks.append(pygame.joystick.Joystick(i))
     joysticks[-1].init()
 
-while alive:
-    clock.tick(60)
+    print("joystick found")
 
-    for event in pygame.event.get():
-        if event.type == pygame.JOYAXISMOTION:
-            if event.axis == 2:
-                rotation["x"] = round(event.value * 2) / 2
+# while alive:
+#     clock.tick(60)
 
-            if event.axis == 3:
-                rotation["y"] = -round(event.value * 2) / 2
+#     for event in pygame.event.get():
+#         if event.type == pygame.JOYAXISMOTION:
+#             if event.axis == 2:
+#                 rotation["x"] = round(event.value * 2) / 2
+
+#             if event.axis == 3:
+#                 rotation["y"] = -round(event.value * 2) / 2
 
         
-    if rotation:
-        final_rotation = joystick_to_degrees(rotation["x"], rotation["y"])
-        print(final_rotation)
+#     if rotation:
+#         final_rotation = joystick_to_degrees(rotation["x"], rotation["y"])
+#         print(final_rotation)
