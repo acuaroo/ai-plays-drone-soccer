@@ -25,7 +25,7 @@ alive = True
 stall_thread = None
 
 movement = { "x": 0, "y": 0, "z": 0 }
-rotation = { "x": 0, "y": 0 }
+rotation = 0
 
 image_interval = 10
 last_image_time = 0
@@ -34,17 +34,6 @@ button_map = {
     "2": drone_controller.takeoff,
     "1": drone_controller.land,
 }
-
-def joystick_to_degrees(axis2_value, axis3_value):
-    if axis2_value == 0 and axis3_value == 0:
-        return 0
-    
-    angle = math.atan2(axis2_value, axis3_value)
-
-    degrees = math.degrees(angle)
-    degrees = (degrees + 360) % 360
-
-    return degrees
 
 def hround(number):
     return round(number * 2) / 2
@@ -77,24 +66,8 @@ while alive:
                 movement["z"] = -rounded_value
                 drone_controller.set_last_z_request(-rounded_value)
             
-            rotation["x"] = hround(value) if event.axis == 2 else rotation["x"]
-            rotation["y"] = -hround(value) if event.axis == 3 else rotation["y"]
-
+            if event.axis == 2:
+                rotation = round(event.value)
         
-    if movement != drone_controller.last_movement:
-        # print(f"moving from {movement} to {drone_controller.last_movement}")
-
-        drone_controller.move(movement["x"], movement["y"], movement["z"])
-    elif rotation != drone_controller.last_rotation:
-        print(rotation["x"], rotation["y"])
-
-        final_rotation = joystick_to_degrees(rotation["x"], rotation["y"])
-        drone_controller.rotate(final_rotation, rotation)
-    
-    # current_time = time.time()
-    
-    # if current_time - last_image_time >= image_interval:
-    #     last_image_time = current_time
-
-    #     if not drone_controller.processing:
-    #         drone_controller.record_picture()
+    if movement != drone_controller.last_movement or rotation != drone_controller.last_rotation:
+        drone_controller.move(movement["x"], movement["y"], movement["z"], rotation)

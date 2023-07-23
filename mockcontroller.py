@@ -7,7 +7,7 @@ class DroneController:
         self.stream_display = False
         self.speed = 0
         self.last_movement = { "x": 0, "y": 0, "z": 0 }
-        self.last_rotation = { "x": 0, "y": 0 }
+        self.last_rotation = 0
 
         self.last_z_request = None
         self.last_x_request = None
@@ -37,8 +37,10 @@ class DroneController:
         print(f"MOCK TAKEOFF...")
 
     def move(self, x=0, y=0, z=0, yaw=0):
+        print(self.speed)
         print(f"MOCK RC CONTROL: {int(x * self.speed), int(z * self.speed), int(y* self.speed), yaw}")
         self.last_movement = { "x": x, "y": y, "z": z }
+        self.last_rotation = yaw
     
     def rotate(self, degrees, last_rotation):
         if degrees >= 180 and degrees <= 360:

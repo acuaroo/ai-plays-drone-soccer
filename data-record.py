@@ -1,18 +1,19 @@
 import cv2
 from time import sleep
 from datetime import datetime
+import time
 
-telloVideo = cv2.VideoCapture("udp://@0.0.0.0:11111")
+tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
 
-ret = False
+returned = False
 scale = 2
 frame_num = 0
 
 while(True):
-    ret, frame = telloVideo.read()
+    returned, frame = tello_video.read()
     frame_num += 1
 
-    if ret and frame_num % 60 == 0:
+    if returned and frame_num % 60 == 0:
         height, width, layers = frame.shape
 
         new_h = int(height / scale)
@@ -21,7 +22,7 @@ while(True):
         resize = cv2.resize(frame, (new_w, new_h))
         cv2.imshow("tello feed", resize)
 
-        final_time = f"{datetime.second}_{datetime.minute}"
+        final_time = f"{time.time()}"
 
         if not cv2.imwrite(f"data/{final_time}.png", resize):
             print(f"failed to save picture @ data/{final_time}.png")
@@ -34,5 +35,5 @@ while(True):
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
-telloVideo.release()
+tello_video.release()
 cv2.destroyAllWindows()
