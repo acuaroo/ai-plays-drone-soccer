@@ -17,7 +17,7 @@ while True:
     returned, frame = tello_video.read()
     frame_num += 1
 
-    if returned and frame_num % 60 == 0:
+    if returned and frame_num % 10 == 0:
         height, width, layers = frame.shape
 
         new_h = int(height / scale)
@@ -30,12 +30,14 @@ while True:
             with open("drone_stream.txt", "r") as file:
                 content = file.read().strip()
 
-            final_name = f"{content}_{time.time()}.png"
+            if content != "0_0_0_0":
+                current_time = datetime.now().strftime("%H-%M-%S")
 
-            if not cv2.imwrite(f"data/{session_id}/{final_name}", resize):
-                print(f"failed to save picture @ data/{session_id}/{final_name}")
-            else:
-                print(f"saved image @ data/{session_id}/{final_name}")
+                final_name = f"{current_time}_{content}.png"
+                if not cv2.imwrite(f"data/{session_id}/{final_name}", resize):
+                    print(f"failed to save picture @ data/{session_id}/{final_name}")
+                else:
+                    print(f"saved image @ data/{session_id}/{final_name}")
 
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break

@@ -16,7 +16,7 @@ joystick = pygame.joystick.Joystick(0)
 joystick.init()
 
 # prep the drone
-drone_controller = controller.DroneController("FAKESESSIONID")
+drone_controller = controller.DroneController()
 drone_controller.connect()
 drone_controller.set_speed(30)
 
