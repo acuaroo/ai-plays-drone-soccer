@@ -1,7 +1,11 @@
 import cv2
-from time import sleep
-from datetime import datetime
 import time
+import os
+
+from datetime import datetime
+
+session_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+os.makedirs(f"data/{session_id}", exist_ok=True)
 
 tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
 
@@ -9,7 +13,7 @@ returned = False
 scale = 2
 frame_num = 0
 
-while(True):
+while True:
     returned, frame = tello_video.read()
     frame_num += 1
 
@@ -22,16 +26,17 @@ while(True):
         resize = cv2.resize(frame, (new_w, new_h))
         cv2.imshow("tello feed", resize)
 
-        final_time = f"{time.time()}"
+        if os.path.exists("drone_stream.txt") and os.path.getsize("drone_stream.txt") > 0:
+            with open("drone_stream.txt", "r") as file:
+                content = file.read().strip()
 
-        if not cv2.imwrite(f"data/{final_time}.png", resize):
-            print(f"failed to save picture @ data/{final_time}.png")
-        else:
-            print(f"saved image @ data/{final_time}.png")
-        
-    # if cv2.waitKey(1) & 0xFF == ord('s'):
-    #     cv2.imwrite("test.jpg", resize)
-    
+            final_name = f"{content}_{time.time()}.png"
+
+            if not cv2.imwrite(f"data/{session_id}/{final_name}", resize):
+                print(f"failed to save picture @ data/{session_id}/{final_name}")
+            else:
+                print(f"saved image @ data/{session_id}/{final_name}")
+
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
