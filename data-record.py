@@ -30,7 +30,7 @@ while True:
             with open("drone_stream.txt", "r") as file:
                 content = file.read().strip()
 
-            if content != "0_0_0_0":
+            if content != "0_0_0_0_0":
                 current_time = datetime.now().strftime("%H-%M-%S")
 
                 final_name = f"{current_time}_{content}.png"

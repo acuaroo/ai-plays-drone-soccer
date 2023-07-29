@@ -18,7 +18,7 @@ joystick.init()
 # prep the drone
 drone_controller = controller.DroneController()
 drone_controller.connect()
-drone_controller.set_speed(30)
+drone_controller.set_speed(40)
 
 clock = pygame.time.Clock()
 alive = True
@@ -75,13 +75,13 @@ while alive:
             if event.axis == 2:
                 rotation = round(event.value)
         
-    if movement != drone_controller.last_movement or rotation != drone_controller.last_rotation:
+    if movement != drone_controller.last_movement or rotation != drone_controller.last_rotation or drone_controller.landing:
         drone_controller.move(movement["x"], movement["y"], movement["z"], rotation)
 
         converted_movement = dict(map(lambda x: (x[0], turn_to_tertiary(x[1])), movement.items()))
         converted_rotation = turn_to_tertiary(rotation)
 
-        movement_string = f"{converted_movement['x']}_{converted_movement['y']}_{converted_movement['z']}_{converted_rotation}"
+        movement_string = f"{converted_movement['x']}_{converted_movement['y']}_{converted_movement['z']}_{converted_rotation}_{drone_controller.is_flying}"
         
         with open("drone_stream.txt", "w") as file:
             file.write(movement_string)

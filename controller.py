@@ -3,8 +3,6 @@ from time import sleep
 from pygame.locals import *
 
 import pygame
-import cv2
-import random
 
 pygame.init()
 pygame.joystick.init()
@@ -15,6 +13,9 @@ class DroneController:
         self.drone = None
         self.stream_display = False
         self.speed = 0
+        self.is_flying = 0
+        self.landing = False
+
         self.last_movement = { "x": 0, "y": 0, "z": 0 }
         self.last_rotation = 0
 
@@ -41,6 +42,8 @@ class DroneController:
         print(f"< taking off... >")
 
         self.drone.takeoff()
+        self.is_flying = 1
+
         if pygame.joystick.get_count() > 0:
             # rumble controller to let pilot know they can know move
             joystick = pygame.joystick.Joystick(0)
@@ -69,10 +72,19 @@ class DroneController:
     #     self.last_movement = { "x": 0, "y": 0, "z": 0 }
 
     def land(self):
-        print(f"< landing... >")
+        print("< landing... >")
+
+        self.is_flying = 0
+        self.landing = True
 
         self.drone.send_rc_control(0, 0, 0, 0)
         self.drone.land()
+
+        print("< stalling... >")
+        sleep(5)
+        print("< resetting >")
+        
+        self.landing = False
 
     def streamon(self):
         self.drone.streamon()
