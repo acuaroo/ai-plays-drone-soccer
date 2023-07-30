@@ -77,6 +77,12 @@ class DroneController:
         self.is_flying = 0
         self.landing = True
 
+        movement_string = "0_0_0_0_2"
+        
+        with open("drone_stream.txt", "w") as file:
+            print("writing", movement_string, "to drone_stream.txt")
+            file.write(movement_string)
+
         self.drone.send_rc_control(0, 0, 0, 0)
         self.drone.land()
 

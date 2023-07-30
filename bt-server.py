@@ -75,7 +75,7 @@ while alive:
             if event.axis == 2:
                 rotation = round(event.value)
         
-    if movement != drone_controller.last_movement or rotation != drone_controller.last_rotation or drone_controller.landing:
+    if movement != drone_controller.last_movement or rotation != drone_controller.last_rotation:
         drone_controller.move(movement["x"], movement["y"], movement["z"], rotation)
 
         converted_movement = dict(map(lambda x: (x[0], turn_to_tertiary(x[1])), movement.items()))

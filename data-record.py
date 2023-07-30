@@ -12,6 +12,9 @@ tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
 returned = False
 scale = 2
 frame_num = 0
+skip = False
+
+amount_of_data = 0
 
 while True:
     returned, frame = tello_video.read()
@@ -29,15 +32,28 @@ while True:
         if os.path.exists("drone_stream.txt") and os.path.getsize("drone_stream.txt") > 0:
             with open("drone_stream.txt", "r") as file:
                 content = file.read().strip()
+            
+            if skip:
+                if content != "0_0_0_0_2":
+                    print("drone has taken off again!")
+                    skip = False
+                else:
+                    print("drone is on the ground, skipping...")
 
-            if content != "0_0_0_0_0":
+            if content != "0_0_0_0_0" and not skip:
                 current_time = datetime.now().strftime("%H-%M-%S")
 
                 final_name = f"{current_time}_{content}.png"
                 if not cv2.imwrite(f"data/{session_id}/{final_name}", resize):
                     print(f"failed to save picture @ data/{session_id}/{final_name}")
                 else:
-                    print(f"saved image @ data/{session_id}/{final_name}")
+                    amount_of_data += 1
+
+                    print(f"{amount_of_data} | saved image @ data/{session_id}/{final_name}")
+                
+                if content == "0_0_0_0_2":
+                    print("landed! waiting for drone to take off again...")
+                    skip = True
 
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
