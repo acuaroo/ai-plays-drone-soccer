@@ -43,7 +43,7 @@ while True:
             if content != "0_0_0_0_0" and not skip:
                 current_time = datetime.now().strftime("%H-%M-%S")
 
-                final_name = f"{current_time}_{content}.png"
+                final_name = f"{amount_of_data}_{current_time}_{content}.png"
                 if not cv2.imwrite(f"data/{session_id}/{final_name}", resize):
                     print(f"failed to save picture @ data/{session_id}/{final_name}")
                 else:
