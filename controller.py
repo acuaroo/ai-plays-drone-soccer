@@ -38,18 +38,27 @@ class DroneController:
         self.last_z_request = new_value
 
     def takeoff(self):
-        print(f"< {self.drone.get_battery()}% battery left >")
+        if self.is_flying == 1 and not self.landing:
+            return
+        
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+
+        battery = self.drone.get_battery()
+        print(f"< {battery}% battery left >")
         print(f"< taking off... >")
+
+        if battery <= 10:
+            print("WARNING: LOW BATTERY")
+            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 0.5)
+            sleep(0.5)
+            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 0.5)
 
         self.drone.takeoff()
         self.is_flying = 1
 
-        if pygame.joystick.get_count() > 0:
-            # rumble controller to let pilot know they can know move
-            joystick = pygame.joystick.Joystick(0)
-            joystick.init()
-
-            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 2)
+        # rumble controller to let pilot know they can know move
+        joystick.rumble(self.rumble_intensity, self.rumble_intensity, 2)
 
     def move(self, x=0, y=0, z=0, yaw=0):
         self.drone.send_rc_control(int(x * self.speed), int(z * self.speed), int(y* self.speed), int(yaw * self.speed * 1.2))
