@@ -50,9 +50,9 @@ class DroneController:
 
         if battery <= 10:
             print("WARNING: LOW BATTERY")
-            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 0.5)
-            sleep(0.5)
-            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 0.5)
+            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
+            sleep(1)
+            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
 
         self.drone.takeoff()
         self.is_flying = 1
