@@ -1,105 +1,169 @@
+import colorama
+
 from djitellopy import tello
-from time import sleep
-from pygame.locals import *
+from colorama import Fore, Back
 
-import pygame
+state_map = {
+    0: "x",
+    1: "y",
+    2: "z",
+    3: "rotation",
+    4: "is_flying"
+}
 
-pygame.init()
-pygame.joystick.init()
+colorama.init(autoreset=True)  
 
-class DroneController:
-    def __init__(self):
+def turn_to_tertiary(x):
+    if x == -1:
+        return 2
+    
+    return x
+
+def snap_axis(x):
+    return 1 if x > 0 else 0
+
+def replace_at_index(input_string, index, replace):
+    if 0 <= index < len(input_string):
+        new_string = input_string[:index] + replace + input_string[index + 1:]
+        return new_string
+    else:
+        raise IndexError("requested index is out of range")
+
+def turn_to_negative(x):
+    if x == 2:
+        return -1
+    
+    return x
+
+def log(message, log_type="normal"):
+    if log_type == "error":
+        print(f"{Fore.BLACK}{Back.RED}!!! {message}")
+    elif log_type == "warning":
+        print(f"{Fore.YELLOW}~~~ {message}")
+    elif log_type == "success":
+        print(f"{Fore.GREEN}>>> {message}")
+    else:
+        print(f">>> {message}")  
+
+class DroneController():
+    def __init__(self, joystick, verbose=False, mock=False):
         super().__init__()
+
         self.drone = None
-        self.stream_display = False
+        self.is_flying = False
+
+        self.verbose = verbose
+        self.mock = mock
+
         self.speed = 0
-        self.is_flying = 0
-        self.landing = False
+        self.battery  = 0
 
-        self.last_movement = { "x": 0, "y": 0, "z": 0 }
-        self.last_rotation = 0
+        self.current_state = "0_0_0_0_0"
 
+        self.joystick = joystick
         self.rumble_intensity = 6000
-
-        self.last_z_request = None
-        self.last_x_request = None
-
-    def connect(self):
-        self.drone = tello.Tello()
-        self.drone.connect()
     
     def set_speed(self, speed):
         self.speed = speed
     
-    def set_last_x_request(self, new_value):
-        self.last_x_request = new_value
-    
-    def set_last_z_request(self, new_value):
-        self.last_z_request = new_value
-
-    def takeoff(self):
-        if self.is_flying == 1 and not self.landing:
+    def streamon(self):
+        if self.mock:
+            log("MOCK MODE: stream started!", "success")
             return
         
-        joystick = pygame.joystick.Joystick(0)
-        joystick.init()
-
-        battery = self.drone.get_battery()
-        print(f"< {battery}% battery left >")
-        print(f"< taking off... >")
-
-        if battery <= 10:
-            print("WARNING: LOW BATTERY")
-            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
-            sleep(1)
-            joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
-
-        self.drone.takeoff()
-        self.is_flying = 1
-
-        # rumble controller to let pilot know they can know move
-        joystick.rumble(self.rumble_intensity, self.rumble_intensity, 2)
-
-    def move(self, x=0, y=0, z=0, yaw=0):
-        self.drone.send_rc_control(int(x * self.speed), int(z * self.speed), int(y* self.speed), int(yaw * self.speed * 1.2))
-        self.last_movement = { "x": x, "y": y, "z": z }
-        self.last_rotation = yaw
+        self.drone.streamon()
     
-    # def rotate(self, degrees, last_rotation):
-    #     if degrees >= 180 and degrees <= 360:
-    #         self.drone.rotate_counter_clockwise(360 - round(degrees))
-    #         self.last_rotation_dr = -1
-    #     else:
-    #         self.drone.rotate_clockwise(round(degrees))
-            
-    #         if round(degrees) == 0:
-    #             self.last_rotation_dr = 0
-    #         else:
-    #             self.last_rotation_dr = 1
+    def streamoff(self):
+        if self.mock:
+            log("MOCK MODE: stream ended!", "success")
+            return
         
-    #     self.last_rotation = { "x": last_rotation["x"], "y": last_rotation["y"]}
-    #     self.last_movement = { "x": 0, "y": 0, "z": 0 }
+        self.drone.streamoff()
+
+    def connect(self):
+        if self.mock:
+            log("MOCK MODE: drone connected!", "success")
+            return
+        
+        self.drone = tello.Tello()
+        self.drone.connect()
+
+        log("drone connected!", "success")
+    
+    def takeoff(self):
+        if self.is_flying:
+            log("attempted to takeoff while already flying!", "warning")
+            return
+        
+        if self.mock:
+            log("MOCK MODE: drone took off!", "success")
+            self.is_flying = True
+            return
+        
+        self.battery = self.drone.get_battery()
+        log(f"{self.battery}% battery left", "normal")
+
+        if self.battery <= 10:
+            # give warning to the pilot
+            self.joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
+            sleep(1)
+            self.joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
+        
+        self.drone.takeoff()
+        self.is_flying = True
+
+        log("drone has taken off!", "success")
+        joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
+    
+    def move(self, x=0, y=0, z=0, rotation=0):
+        if not self.is_flying and self.verbose:
+            log("attempted to move while not flying!", "warning")
+            return
+        
+        if self.mock:
+            log(f"MOCK MODE: drone moved to {x}, {y}, {z}, {rotation}", "success")
+            return
+        
+        self.drone.send_rc_control(x, y, z, rotation)
+
+        if self.verbose:
+            log(f"drone moved to {x}, {y}, {z}, {rotation}", "normal")
+
+    def move_state(self, new_state):        
+        new_state = new_state.split("_")
+        old_state = self.current_state.split("_")
+
+        movements = [0, 0, 0, 0]
+
+        for i in range(len(new_state)):
+            if new_state[i] != old_state[i]:
+                if i == 4:
+                    if new_state[i] == "1":
+                        self.takeoff()
+                    else:
+                        self.land()
+                else:
+                    movements[i] = new_state[i]
+        
+        self.current_state = "_".join(new_state)
+
+        movements = [turn_to_negative(int(movement)) for movement in movements]
+        self.move(*movements)
 
     def land(self):
-        print("< landing... >")
-
-        self.is_flying = 0
-        self.landing = True
-
-        movement_string = "0_0_0_0_2"
+        if not self.is_flying:
+            log("attempted to land while not flying!", "warning")
+            return
         
-        with open("drone_stream.txt", "w") as file:
-            print("writing", movement_string, "to drone_stream.txt")
-            file.write(movement_string)
+        if self.mock:
+            self.is_flying = False
+            log("MOCK MODE: drone landed!", "success")
+            return
 
-        self.drone.send_rc_control(0, 0, 0, 0)
         self.drone.land()
+        self.is_flying = False
 
-        print("< stalling... >")
-        sleep(5)
-        print("< resetting >")
-        
-        self.landing = False
-
-    def streamon(self):
-        self.drone.streamon()
+        log("drone has landed!", "success")
+        joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
+    
+    
