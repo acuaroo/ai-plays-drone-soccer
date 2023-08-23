@@ -4,6 +4,7 @@ import cv2
 import os
 
 from threading import Thread
+from datetime import datetime
 from controller import DroneController, \
     log, replace_at_index, snap_axis, turn_to_tertiary
 
@@ -17,7 +18,7 @@ if pygame.joystick.get_count() == 0:
 joystick = pygame.joystick.Joystick(0)
 joystick.init()
 
-drone_controller = DroneController(joystick, verbose=True, mock=True)
+drone_controller = DroneController(joystick, verbose=True, mock=False)
 drone_controller.connect()
 drone_controller.set_speed(40)
 
@@ -43,17 +44,36 @@ action_map = {
 def camera_loop():
     global drone_controller, recording
 
-    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
     drone_controller.streamon()
+    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
+    frame_num = 0
+    amount_of_data = 0
+
+    session_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    os.makedirs(f"new-data/{session_id}", exist_ok=True)
 
     while recording and drone_controller.is_flying:
         returned, frame = tello_video.read()
+        frame_num += 1
 
-        if returned:
-            cv2.imshow("tello feed", frame)
+        if returned and frame_num % 10 == 0 and not drone_controller.current_state == "0_0_0_0_1" and drone_controller.is_flying:
+            height, width, layers = frame.shape
 
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
+            new_h = int(height / 2)
+            new_w = int(width / 2)
+
+            resize = cv2.resize(frame, (new_w, new_h))
+            current_time = datetime.now().strftime("%H-%M-%S")
+
+            final_name = f"{amount_of_data}_{current_time}_{drone_controller.current_state}.png"
+            if not cv2.imwrite(f"new-data/{session_id}/{final_name}", resize):
+                log(f"failed to save picture @ new-data/{session_id}/{final_name}", "error")
+            else:
+                amount_of_data += 1
+
+                if drone_controller.verbose:
+                    log(f"{amount_of_data} | saved image @ new-data/{session_id}/{final_name}", "normal")
+
     
     tello_video.release()
     drone_controller.streamoff()

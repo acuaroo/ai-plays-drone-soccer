@@ -1,7 +1,8 @@
-import colorama
+# import colorama
 
+from time import sleep
 from djitellopy import tello
-from colorama import Fore, Back
+# from colorama import Fore, Back
 
 state_map = {
     0: "x",
@@ -11,7 +12,7 @@ state_map = {
     4: "is_flying"
 }
 
-colorama.init(autoreset=True)  
+# colorama.init(autoreset=True)  
 
 def turn_to_tertiary(x):
     if x == -1:
@@ -37,11 +38,11 @@ def turn_to_negative(x):
 
 def log(message, log_type="normal"):
     if log_type == "error":
-        print(f"{Fore.BLACK}{Back.RED}!!! {message}")
+        print(f"!!! {message}")
     elif log_type == "warning":
-        print(f"{Fore.YELLOW}~~~ {message}")
+        print(f"~~~ {message}")
     elif log_type == "success":
-        print(f"{Fore.GREEN}>>> {message}")
+        print(f">>> {message}")
     else:
         print(f">>> {message}")  
 
@@ -113,7 +114,7 @@ class DroneController():
         self.is_flying = True
 
         log("drone has taken off!", "success")
-        joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
+        self.joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
     
     def move(self, x=0, y=0, z=0, rotation=0):
         if not self.is_flying and self.verbose:
@@ -124,7 +125,7 @@ class DroneController():
             log(f"MOCK MODE: drone moved to {x}, {y}, {z}, {rotation}", "success")
             return
         
-        self.drone.send_rc_control(x, y, z, rotation)
+        self.drone.send_rc_control(int(x * self.speed), int(z * self.speed), int(y * self.speed), int(rotation * self.speed))
 
         if self.verbose:
             log(f"drone moved to {x}, {y}, {z}, {rotation}", "normal")
@@ -160,10 +161,10 @@ class DroneController():
             log("MOCK MODE: drone landed!", "success")
             return
 
-        self.drone.land()
         self.is_flying = False
+        self.drone.land()
 
         log("drone has landed!", "success")
-        joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
+        self.joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
     
     
