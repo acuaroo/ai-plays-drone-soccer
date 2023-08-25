@@ -1,10 +1,10 @@
-import pygame
-import time
-import cv2
-import os
-
 from threading import Thread
 from datetime import datetime
+
+import os
+import pygame
+import cv2
+
 from controller import DroneController, \
     log, replace_at_index, snap_axis, turn_to_tertiary
 
@@ -53,7 +53,8 @@ def camera_loop():
     os.makedirs(f"new-data/{session_id}", exist_ok=True)
 
     while True:
-        if not drone_controller.is_flying or not recording: continue
+        if not drone_controller.is_flying or not recording: 
+            continue
         
         returned, frame = tello_video.read()
         frame_num += 1
@@ -100,7 +101,8 @@ while alive:
 
             mapped_value = action_map["buttons"].get(event.button)
             
-            if not mapped_value: continue
+            if not mapped_value:
+                continue
 
             place_to_change = mapped_value[0]
             new_value = mapped_value[1]
@@ -109,7 +111,8 @@ while alive:
         elif event.type == pygame.JOYAXISMOTION:
             mapped_value = action_map["joysticks"].get(event.axis)
 
-            if not mapped_value: continue
+            if not mapped_value:
+                continue
             
             function_to_run = mapped_value[0]
             sign = mapped_value[1]
