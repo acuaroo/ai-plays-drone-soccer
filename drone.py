@@ -52,7 +52,9 @@ def camera_loop():
     session_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     os.makedirs(f"new-data/{session_id}", exist_ok=True)
 
-    while recording and drone_controller.is_flying:
+    while True:
+        if not drone_controller.is_flying or not recording: continue
+        
         returned, frame = tello_video.read()
         frame_num += 1
 
