@@ -67,10 +67,10 @@ def camera_loop():
 
             height, width, layers = frame.shape
 
-            new_h = int(height / 2)
-            new_w = int(width / 2)
+            new_height = int(height / 2)
+            new_width = int(width / 2)
 
-            resize = cv2.resize(frame, (new_w, new_h))
+            resize = cv2.resize(frame, (new_width, new_height))
             current_time = datetime.now().strftime("%H-%M-%S")
 
             final_name = f"new-data/{session_id}/{amount_of_data}_{current_time}_{drone_controller.current_state}.png"
