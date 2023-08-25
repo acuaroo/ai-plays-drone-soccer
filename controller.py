@@ -14,14 +14,17 @@ state_map = {
 
 # colorama.init(autoreset=True)  
 
+
 def turn_to_tertiary(x):
     if x == -1:
         return 2
     
     return x
 
+
 def snap_axis(x):
     return 1 if x > 0 else 0
+
 
 def replace_at_index(input_string, index, replace):
     if 0 <= index < len(input_string):
@@ -30,11 +33,13 @@ def replace_at_index(input_string, index, replace):
     else:
         raise IndexError("requested index is out of range")
 
+
 def turn_to_negative(x):
     if x == 2:
         return -1
     
     return x
+
 
 def log(message, log_type="normal"):
     if log_type == "error":
@@ -46,7 +51,8 @@ def log(message, log_type="normal"):
     else:
         print(f">>> {message}")  
 
-class DroneController():
+
+class DroneController:
     def __init__(self, joystick, verbose=False, mock=False):
         super().__init__()
 
@@ -57,7 +63,7 @@ class DroneController():
         self.mock = mock
 
         self.speed = 0
-        self.battery  = 0
+        self.battery = 0
 
         self.current_state = "0_0_0_0_0"
 
@@ -67,14 +73,14 @@ class DroneController():
     def set_speed(self, speed):
         self.speed = speed
     
-    def streamon(self):
+    def stream_on(self):
         if self.mock:
             log("MOCK MODE: stream started!", "success")
             return
         
         self.drone.streamon()
     
-    def streamoff(self):
+    def stream_off(self):
         if self.mock:
             log("MOCK MODE: stream ended!", "success")
             return

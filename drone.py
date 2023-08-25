@@ -41,10 +41,11 @@ action_map = {
     }
 }
 
+
 def camera_loop():
     global drone_controller, recording
 
-    drone_controller.streamon()
+    drone_controller.stream_on()
     tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
     frame_num = 0
     amount_of_data = 0
@@ -59,7 +60,11 @@ def camera_loop():
         returned, frame = tello_video.read()
         frame_num += 1
 
-        if returned and frame_num % 10 == 0 and not drone_controller.current_state == "0_0_0_0_1" and drone_controller.is_flying:
+        if (returned
+                and frame_num % 10 == 0
+                and not drone_controller.current_state == "0_0_0_0_1"
+                and drone_controller.is_flying):
+
             height, width, layers = frame.shape
 
             new_h = int(height / 2)
@@ -68,18 +73,19 @@ def camera_loop():
             resize = cv2.resize(frame, (new_w, new_h))
             current_time = datetime.now().strftime("%H-%M-%S")
 
-            final_name = f"{amount_of_data}_{current_time}_{drone_controller.current_state}.png"
-            if not cv2.imwrite(f"new-data/{session_id}/{final_name}", resize):
-                log(f"failed to save picture @ new-data/{session_id}/{final_name}", "error")
+            final_name = f"new-data/{session_id}/{amount_of_data}_{current_time}_{drone_controller.current_state}.png"
+
+            if not cv2.imwrite(final_name, resize):
+                log(f"failed to save picture @ {final_name}", "error")
             else:
                 amount_of_data += 1
 
                 if drone_controller.verbose:
-                    log(f"{amount_of_data} | saved image @ new-data/{session_id}/{final_name}", "normal")
+                    log(f"{amount_of_data} | saved image @ {final_name}", "normal")
 
-    
     tello_video.release()
-    drone_controller.streamoff()
+    drone_controller.stream_off()
+
 
 while alive:
     clock.tick(60)
