@@ -8,6 +8,8 @@ import cv2
 from controller import DroneController, \
     log, replace_at_index, snap_axis, turn_to_tertiary
 
+from modeler import Model
+
 pygame.init()
 pygame.joystick.init()
 
@@ -21,6 +23,8 @@ joystick.init()
 drone_controller = DroneController(joystick, verbose=True, mock=False)
 drone_controller.connect()
 drone_controller.set_speed(40)
+
+model = Model("models/VERSION_HERE", verbose=True)
 
 clock = pygame.time.Clock()
 alive = True
