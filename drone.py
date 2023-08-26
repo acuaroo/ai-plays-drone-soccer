@@ -26,8 +26,11 @@ drone_controller.set_speed(40)
 
 model = Model("models/VERSION_HERE", verbose=True)
 
+session_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
 clock = pygame.time.Clock()
 alive = True
+first_record = False
 recording = False
 
 action_map = {
@@ -47,14 +50,15 @@ action_map = {
 
 
 def camera_loop():
-    global drone_controller, recording
+    global drone_controller, recording, first_record, session_id
+
+    first_record = True
 
     drone_controller.stream_on()
     tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
     frame_num = 0
     amount_of_data = 0
 
-    session_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     os.makedirs(f"new-data/{session_id}", exist_ok=True)
 
     while True:
@@ -87,8 +91,8 @@ def camera_loop():
                 if drone_controller.verbose:
                     log(f"{amount_of_data} | saved image @ {final_name}", "normal")
 
-    tello_video.release()
-    drone_controller.stream_off()
+    # tello_video.release()
+    # drone_controller.stream_off()
 
 
 while alive:
@@ -98,15 +102,18 @@ while alive:
 
     for event in pygame.event.get():
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 15:
-                recording = not recording
+            if event.button == 6:
+                recording = True
+                log("started recording!", "success")
 
-                if recording:
-                    log("started recording!", "success")
-                    Thread(target=camera_loop).start()
-                else:
-                    log("stopped recording!", "success")
+                if not first_record:
+                    Thread(target=camera_loop).start()       
                 
+                continue
+            elif event.button == 4:
+                recording = False
+                log("stopped recording!", "success")
+
                 continue
 
             mapped_value = action_map["buttons"].get(event.button)

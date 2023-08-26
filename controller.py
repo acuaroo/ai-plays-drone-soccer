@@ -140,7 +140,7 @@ class DroneController:
         new_state = new_state.split("_")
         old_state = self.current_state.split("_")
 
-        movements = [0, 0, 0, 0]
+        movements = [int(old_state[0]), int(old_state[1]), int(old_state[2]), int(old_state[3])]
 
         for i in range(len(new_state)):
             if new_state[i] != old_state[i]:
