@@ -1,8 +1,10 @@
-# import colorama
-
 from time import sleep
 from djitellopy import tello
-# from colorama import Fore, Back
+from datetime import datetime
+
+import os
+import cv2
+
 
 state_map = {
     0: "x",
@@ -11,8 +13,6 @@ state_map = {
     3: "rotation",
     4: "is_flying"
 }
-
-# colorama.init(autoreset=True)  
 
 
 def turn_to_tertiary(x):
@@ -50,6 +50,46 @@ def log(message, log_type="normal"):
         print(f">>> {message}")
     else:
         print(f">>> {message}")  
+
+
+def camera_loop(drone_controller, recording, session_id):
+    drone_controller.stream_on()
+    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
+
+    frame_num = 0
+    amount_of_data = 0
+
+    os.makedirs(f"data/{session_id}", exist_ok=True)
+
+    while True:
+        if not drone_controller.is_flying or not recording: 
+            continue
+        
+        returned, frame = tello_video.read()
+        frame_num += 1
+
+        if (returned
+                and frame_num % 10 == 0
+                and not drone_controller.current_state == "0_0_0_0_1"
+                and drone_controller.is_flying):
+
+            height, width, layers = frame.shape
+
+            new_height = int(height / 2)
+            new_width = int(width / 2)
+
+            resize = cv2.resize(frame, (new_width, new_height))
+            current_time = datetime.now().strftime("%H-%M-%S")
+
+            final_name = f"data/{session_id}/{amount_of_data}_{current_time}_{drone_controller.current_state}.png"
+
+            if not cv2.imwrite(final_name, resize):
+                log(f"failed to save picture @ {final_name}", "error")
+            else:
+                amount_of_data += 1
+
+                if drone_controller.verbose:
+                    log(f"{amount_of_data} | saved image @ {final_name}", "normal")
 
 
 class DroneController:

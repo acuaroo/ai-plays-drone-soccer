@@ -1,12 +1,10 @@
 from threading import Thread
 from datetime import datetime
 
-import os
 import pygame
-import cv2
 
 from controller import DroneController, \
-    log, replace_at_index, snap_axis, turn_to_tertiary
+    log, replace_at_index, snap_axis, turn_to_tertiary, camera_loop
 
 from modeler import Model
 
@@ -30,7 +28,6 @@ session_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 clock = pygame.time.Clock()
 alive = True
-first_record = False
 recording = False
 
 action_map = {
@@ -48,51 +45,7 @@ action_map = {
     }
 }
 
-
-def camera_loop():
-    global drone_controller, recording, first_record, session_id
-
-    first_record = True
-
-    drone_controller.stream_on()
-    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
-    frame_num = 0
-    amount_of_data = 0
-
-    os.makedirs(f"new-data/{session_id}", exist_ok=True)
-
-    while True:
-        if not drone_controller.is_flying or not recording: 
-            continue
-        
-        returned, frame = tello_video.read()
-        frame_num += 1
-
-        if (returned
-                and frame_num % 10 == 0
-                and not drone_controller.current_state == "0_0_0_0_1"
-                and drone_controller.is_flying):
-
-            height, width, layers = frame.shape
-
-            new_height = int(height / 2)
-            new_width = int(width / 2)
-
-            resize = cv2.resize(frame, (new_width, new_height))
-            current_time = datetime.now().strftime("%H-%M-%S")
-
-            final_name = f"new-data/{session_id}/{amount_of_data}_{current_time}_{drone_controller.current_state}.png"
-
-            if not cv2.imwrite(final_name, resize):
-                log(f"failed to save picture @ {final_name}", "error")
-            else:
-                amount_of_data += 1
-
-                if drone_controller.verbose:
-                    log(f"{amount_of_data} | saved image @ {final_name}", "normal")
-
-    # tello_video.release()
-    # drone_controller.stream_off()
+Thread(target=camera_loop, args=(drone_controller, recording, session_id)).start()
 
 
 while alive:
@@ -105,9 +58,6 @@ while alive:
             if event.button == 6:
                 recording = True
                 log("started recording!", "success")
-
-                if not first_record:
-                    Thread(target=camera_loop).start()       
                 
                 continue
             elif event.button == 4:
