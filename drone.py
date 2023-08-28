@@ -55,7 +55,8 @@ def process_button(event):
     if event.button == 6:
         recording = True
         log("started recording!", "success")
-        
+        Thread(target=joystick.rumble, args=(3000, 3000, 1)).start()
+
         return True
     elif event.button == 4:
         recording = False

@@ -168,7 +168,5 @@ class DroneController:
         self.is_flying = False
         self.drone.land()
 
-        log("drone has landed!", "success")
-        self.joystick.rumble(self.rumble_intensity, self.rumble_intensity, 1)
-    
+        log("drone has landed!", "success")    
     
