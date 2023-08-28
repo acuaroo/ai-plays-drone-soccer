@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 import cv2
 import pygame
+import atexit
 
 from controller import DroneController, \
     log, replace_at_index, snap_axis, turn_to_tertiary
@@ -42,8 +43,8 @@ action_map = {
         5: [snap_axis, "pos", 2],
         4: [snap_axis, "neg", 2],
 
-        0: [round, "pos", 0],
-        1: [round, "neg", 4],
+        0: [round, "pos", 4],
+        1: [round, "neg", 0],
         2: [round, "pos", 6]
     }
 }
@@ -89,7 +90,15 @@ def camera_loop():
                 if drone_controller.verbose:
                     log(f"{amount_of_data} | saved image @ {final_name}", "normal")
 
+def exit_handler():
+    if drone_controller.is_flying:
+        drone_controller.land()
+    
+    if drone_controller.streaming:
+        drone_controller.stream_off()
+
 Thread(target=camera_loop).start()
+atexit.register(exit_handler)
 
 while alive:
     clock.tick(60)
@@ -130,6 +139,8 @@ while alive:
 
             new_value = function_to_run(event.value) if sign == "pos" else -function_to_run(event.value)
             new_value = turn_to_tertiary(new_value)
+            # print(f"changing place {place_to_change} to {new_value}")
+
             new_state = replace_at_index(new_state, place_to_change, str(new_value))
     
     if new_state != drone_controller.current_state:

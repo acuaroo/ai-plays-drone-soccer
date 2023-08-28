@@ -31,13 +31,7 @@ for i in range(0, pygame.joystick.get_count()):
     print("joystick found")
 
 while alive:
-    clock.tick(60)
+    clock.tick(10)
 
     for event in pygame.event.get():
-        if event.type == pygame.JOYBUTTONDOWN and not event.button == "0.0":
-            print(event.button)
-
-        
-    if rotation:
-        final_rotation = joystick_to_degrees(rotation["x"], rotation["y"])
-        print(final_rotation)
+        print(event)

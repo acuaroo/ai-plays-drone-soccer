@@ -53,6 +53,7 @@ class DroneController:
 
         self.drone = None
         self.is_flying = False
+        self.streaming = False
 
         self.verbose = verbose
         self.mock = mock
@@ -69,6 +70,7 @@ class DroneController:
         self.speed = speed
     
     def stream_on(self):
+        self.streaming = True
         if self.mock:
             log("MOCK MODE: stream started!", "success")
             return
@@ -76,6 +78,7 @@ class DroneController:
         self.drone.streamon()
     
     def stream_off(self):
+        self.streaming = False
         if self.mock:
             log("MOCK MODE: stream ended!", "success")
             return
@@ -126,7 +129,7 @@ class DroneController:
             log(f"MOCK MODE: drone moved to {x}, {y}, {z}, {rotation}", "success")
             return
         
-        self.drone.send_rc_control(int(x * self.speed), int(z * self.speed), int(y * self.speed), int(rotation * self.speed))
+        self.drone.send_rc_control(int(z * self.speed), int(x * self.speed), int(y * self.speed), int(rotation * self.speed))
 
         if self.verbose:
             log(f"drone moved to {x}, {y}, {z}, {rotation}", "normal")
@@ -148,9 +151,8 @@ class DroneController:
                     movements[i] = new_state[i]
         
         self.current_state = "_".join(new_state)
-
-        log(f"drones current state: {self.current_state}", "normal")
         movements = [turn_to_negative(int(movement)) for movement in movements]
+
         self.move(*movements)
 
     def land(self):
