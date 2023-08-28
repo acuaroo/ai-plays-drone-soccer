@@ -49,6 +49,22 @@ action_map = {
     }
 }
 
+def process_button(event):
+    global recording
+
+    if event.button == 6:
+        recording = True
+        log("started recording!", "success")
+        
+        return True
+    elif event.button == 4:
+        recording = False
+        log("stopped recording!", "success")
+
+        return True
+    
+    return False
+
 def camera_loop():
     global drone_controller, recording, session_id
 
@@ -107,17 +123,9 @@ while alive:
 
     for event in pygame.event.get():
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 6:
-                recording = True
-                log("started recording!", "success")
-                
+            if process_button(event):
                 continue
-            elif event.button == 4:
-                recording = False
-                log("stopped recording!", "success")
-
-                continue
-
+            
             mapped_value = action_map["buttons"].get(event.button)
             
             if not mapped_value:
