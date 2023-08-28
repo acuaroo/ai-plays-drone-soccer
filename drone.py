@@ -34,6 +34,7 @@ session_id = f"{who}__{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}"
 clock = pygame.time.Clock()
 alive = True
 recording = False
+self_driving = False
 
 action_map = {
     "buttons": {
@@ -64,7 +65,14 @@ def process_button(event):
         log("stopped recording!", "success")
 
         return True
-    
+    # elif event.button == 15:
+    #     recording = False
+    #     self_driving = True
+
+    #     log("STARTED SELF DRIVING", "warning")
+
+    #     return True
+
     return False
 
 def camera_loop():
