@@ -1,10 +1,12 @@
 import os
+import matplotlib.pyplot as plt
 
 directory = "data/"
 states = {}
 
-def index_images(dir):
-    for file_name in os.listdir(dir):
+
+def index_images(session_directory):
+    for file_name in os.listdir(session_directory):
         file = os.path.join(directory, file_name)
 
         if not file:
@@ -19,9 +21,11 @@ def index_images(dir):
 
 
 for directory_name in os.listdir("data/"):
-    dir = os.path.join(directory, directory_name)
+    session = os.path.join(directory, directory_name)
 
-    if os.path.isdir(dir):
-        index_images(dir)
+    if os.path.isdir(session):
+        index_images(session)
 
-print(states)
+plt.bar(*zip(*states.items()))
+plt.title("states vs state frequency")
+plt.show()
