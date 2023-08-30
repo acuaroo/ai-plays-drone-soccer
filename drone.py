@@ -15,6 +15,8 @@ from modeler import Model
 pygame.init()
 pygame.joystick.init()
 
+# to visualize data, run python tests/data-visualizer.py
+
 if pygame.joystick.get_count() == 0:
     log("no joysticks found, stopping...", "error")
     exit()
@@ -29,7 +31,7 @@ drone_controller.set_speed(40)
 model = Model("models/VERSION_HERE", verbose=True)
 
 who = input("who's recording this session?")
-session_id = f"{who}__{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+session_id = f"{who}--{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 
 clock = pygame.time.Clock()
 alive = True
