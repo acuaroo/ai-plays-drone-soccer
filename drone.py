@@ -26,7 +26,7 @@ joystick.init()
 
 drone_controller = DroneController(joystick, verbose=True, mock=False)
 drone_controller.connect()
-drone_controller.set_speed(40)
+drone_controller.set_speed(25)
 
 model = Model("models/VERSION_HERE", verbose=True)
 
@@ -87,7 +87,7 @@ def camera_loop():
     amount_of_data = 0
 
     os.makedirs(f"data/{session_id}", exist_ok=True)
-
+    
     while True:
         if not drone_controller.is_flying or not recording: 
             continue
