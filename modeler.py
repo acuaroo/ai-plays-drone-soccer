@@ -20,7 +20,7 @@ class Model:
         self.model = None
         self.detokenizer = None
 
-        self.set_model(model_path)
+        # self.set_model(model_path)
 
         # TODO: load the model & the detokenizer
 

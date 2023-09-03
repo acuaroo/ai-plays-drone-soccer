@@ -81,7 +81,7 @@ def camera_loop():
     global drone_controller, recording, session_id
 
     drone_controller.stream_on()
-    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
+    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111?overrun_nonfatal=1&fifo_size=50000000")
 
     frame_num = 0
     amount_of_data = 0
