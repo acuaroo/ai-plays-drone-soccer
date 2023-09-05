@@ -20,7 +20,7 @@ class Model:
         self.model = None
         self.detokenizer = None
 
-        self.set_model(model_path)
+        # self.set_model(model_path)
 
     def infer(self, image):
         image = np.expand_dims(image, axis=0)
