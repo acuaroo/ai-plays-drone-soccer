@@ -22,8 +22,6 @@ class Model:
 
         self.set_model(model_path)
 
-        # TODO: load the model & the detokenizer
-
     def infer(self, image):
         image = np.expand_dims(image, axis=0)
 
