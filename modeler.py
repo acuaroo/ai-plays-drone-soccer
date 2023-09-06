@@ -5,10 +5,6 @@ from controller import log
 
 import tensorflow as tf
 from tensorflow import keras
-def load_dict(filename_):
-    with open(filename_, 'rb') as f:
-        ret_di = pickle.load(f)
-    return ret_di
 
 class Model:
     def __init__(self, model_path, verbose=False):
@@ -36,5 +32,5 @@ class Model:
         return result
 
     def set_model(self, model_path):
-        self.model = keras.load_model(f"{model_path}/model.h5")
-        self.detokenizer = load_dict(f"{model_path}/detokenizer.pkl")
+        self.model = tf.keras.models.load_model(f"{model_path}/model.h5")
+        self.detokenizer = np.load(f"{model_path}/detokenizer.npy", allow_pickle=True).item()
