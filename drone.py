@@ -7,6 +7,8 @@ import cv2
 import pygame
 import atexit
 
+import numpy as np
+
 from controller import DroneController, \
     log, replace_at_index, snap_axis, turn_to_tertiary
 
@@ -38,6 +40,8 @@ alive = True
 recording = False
 self_driving = False
 
+latest_predictions = "0_0_0_0_1"
+
 action_map = {
     "buttons": {
         2: [8, "1"],
@@ -54,7 +58,7 @@ action_map = {
 }
 
 def process_button(event):
-    global recording
+    global recording, self_driving
 
     if event.button == 6:
         recording = True
@@ -67,18 +71,21 @@ def process_button(event):
         log("stopped recording!", "success")
 
         return True
-    # elif event.button == 15:
-    #     recording = False
-    #     self_driving = True
+    elif event.button == 15:
+        recording = False
+        self_driving = not self_driving
 
-    #     log("STARTED SELF DRIVING", "warning")
+        if self_driving:
+            log("STARTED SELF DRIVING", "warning")
+        else:
+            log("STOPPED SELF DRIVING", "warning")
 
-    #     return True
+        return True
 
     return False
 
 def camera_loop():
-    global drone_controller, recording, session_id
+    global drone_controller, recording, session_id, self_driving, model, latest_predictions
 
     drone_controller.stream_on()
     tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111?overrun_nonfatal=1&fifo_size=50000000")
@@ -89,7 +96,8 @@ def camera_loop():
     os.makedirs(f"data/{session_id}", exist_ok=True)
     
     while True:
-        if not drone_controller.is_flying or not recording: 
+        if (not drone_controller.is_flying or
+                (not recording and not self_driving)):
             continue
         
         returned, frame = tello_video.read()
@@ -106,19 +114,30 @@ def camera_loop():
             new_width = int(width / 2)
 
             resize = cv2.resize(frame, (new_width, new_height))
-            current_time = datetime.now().strftime("%H-%M-%S")
 
-            final_name = f"data/{session_id}/{amount_of_data}_{current_time}_{drone_controller.current_state}.png"
-
-            if not cv2.imwrite(final_name, resize):
-                log(f"failed to save picture @ {final_name}", "error")
+            if self_driving:
+                image_array = np.asarray(resize)
+                latest_predictions = model.infer(image_array)
             else:
-                amount_of_data += 1
+                current_time = datetime.now().strftime("%H-%M-%S")
+                final_name = f"data/{session_id}/{amount_of_data}_{current_time}_{drone_controller.current_state}.png"
 
-                if drone_controller.verbose:
-                    log(f"{amount_of_data} | saved image @ {final_name}", "normal")
+                if not cv2.imwrite(final_name, resize):
+                    log(f"failed to save picture @ {final_name}", "error")
+                else:
+                    amount_of_data += 1
+
+                    if drone_controller.verbose:
+                        log(f"{amount_of_data} | saved image @ {final_name}", "normal")
+
 
 def exit_handler():
+    global self_driving, recording, alive
+
+    self_driving = False
+    recording = False
+    alive = False
+
     if drone_controller.is_flying:
         drone_controller.land()
     
@@ -162,6 +181,8 @@ while alive:
             # print(f"changing place {place_to_change} to {new_value}")
 
             new_state = replace_at_index(new_state, place_to_change, str(new_value))
-    
-    if new_state != drone_controller.current_state:
+
+    if self_driving and latest_predictions != drone_controller.current_state:
+        drone_controller.move_state(latest_predictions)
+    elif new_state != drone_controller.current_state:
         drone_controller.move_state(new_state)
