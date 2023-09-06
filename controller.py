@@ -129,7 +129,7 @@ class DroneController:
             log(f"MOCK MODE: drone moved to {x}, {y}, {z}, {rotation}", "success")
             return
         
-        self.drone.send_rc_control(int(z * self.speed), int(x * self.speed), int(y * self.speed), int(rotation * self.speed))
+        self.drone.send_rc_control(int(z * self.speed), int(x * self.speed), int(y * self.speed), int(rotation * self.speed * 2))
 
         if self.verbose:
             log(f"drone moved to {x}, {y}, {z}, {rotation}", "normal")

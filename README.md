@@ -1,10 +1,10 @@
 # AI plays drone soccer
-> *Goal: Train an AI to play [drone soccer](https://www.dronesoccer.us/), and play against other huamans/AI*
+
+> _Goal: Train an AI to play [drone soccer](https://www.dronesoccer.us/), and play against other huamans/AI_
 
 ## What's drone soccer?
 
 Essentially, on each team, there's a "striker". This striker must pilot their drone into the enemy teams goal, everybody on their team blocks the enemies striker, and everybody on the opposing team blocks them. More in-depth rules can be found [here](https://www.dronesoccer.us/intro), but for our purposes, this should be good enough!
-
 
 ## Stage 0: Prep
 
@@ -16,4 +16,4 @@ First step is training, in this, we're going to teach a drone how to go through 
 
 ---
 
-> *Project is still a WIP*
+> _Project is still a WIP_

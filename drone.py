@@ -15,6 +15,8 @@ from modeler import Model
 pygame.init()
 pygame.joystick.init()
 
+# to visualize data, run python tests/data-visualizer.py
+
 if pygame.joystick.get_count() == 0:
     log("no joysticks found, stopping...", "error")
     exit()
@@ -24,12 +26,12 @@ joystick.init()
 
 drone_controller = DroneController(joystick, verbose=True, mock=False)
 drone_controller.connect()
-drone_controller.set_speed(40)
+drone_controller.set_speed(25)
 
 model = Model("models/VERSION_HERE", verbose=True)
 
 who = input("who's recording this session?")
-session_id = f"{who}__{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+session_id = f"{who}--{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 
 clock = pygame.time.Clock()
 alive = True
@@ -79,13 +81,13 @@ def camera_loop():
     global drone_controller, recording, session_id
 
     drone_controller.stream_on()
-    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111")
+    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111?overrun_nonfatal=1&fifo_size=50000000")
 
     frame_num = 0
     amount_of_data = 0
 
     os.makedirs(f"data/{session_id}", exist_ok=True)
-
+    
     while True:
         if not drone_controller.is_flying or not recording: 
             continue
