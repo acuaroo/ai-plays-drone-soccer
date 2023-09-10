@@ -45,4 +45,9 @@ plt.bar(range(sorted_len), [val[1] for val in sorted_states], align="center")
 plt.xticks(range(sorted_len), [val[0] for val in sorted_states])
 plt.xticks(rotation=45, ha="right")
 plt.title(name)
+
+# write the number of occurances above each bar, tilted text, and looks nice
+for i, v in enumerate([val[1] for val in sorted_states]):
+    plt.text(i, v + 100, str(v), rotation=90, ha="center")
+
 plt.show()
