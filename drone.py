@@ -57,6 +57,7 @@ action_map = {
     }
 }
 
+
 def process_button(event):
     global recording, self_driving
 
@@ -84,22 +85,24 @@ def process_button(event):
 
     return False
 
+
 def camera_loop():
     global drone_controller, recording, session_id, self_driving, model, latest_predictions
 
     drone_controller.stream_on()
-    tello_video = cv2.VideoCapture("udp://@0.0.0.0:11111?overrun_nonfatal=1&fifo_size=50000000")
+    tello_video = cv2.VideoCapture(
+        "udp://@0.0.0.0:11111?overrun_nonfatal=1&fifo_size=50000000")
 
     frame_num = 0
     amount_of_data = 0
 
     os.makedirs(f"data/{session_id}", exist_ok=True)
-    
+
     while True:
         if (not drone_controller.is_flying or
                 (not recording and not self_driving)):
             continue
-        
+
         returned, frame = tello_video.read()
         frame_num += 1
 
@@ -140,9 +143,10 @@ def exit_handler():
 
     if drone_controller.is_flying:
         drone_controller.land()
-    
+
     if drone_controller.streaming:
         drone_controller.stream_off()
+
 
 Thread(target=camera_loop).start()
 atexit.register(exit_handler)
@@ -156,31 +160,34 @@ while alive:
         if event.type == pygame.JOYBUTTONDOWN:
             if process_button(event):
                 continue
-            
+
             mapped_value = action_map["buttons"].get(event.button)
-            
+
             if not mapped_value:
                 continue
 
             place_to_change = mapped_value[0]
             new_value = mapped_value[1]
 
-            new_state = new_state[:place_to_change] + new_value + new_state[place_to_change + 1:]
+            new_state = new_state[:place_to_change] + \
+                new_value + new_state[place_to_change + 1:]
         elif event.type == pygame.JOYAXISMOTION:
             mapped_value = action_map["joysticks"].get(event.axis)
 
             if not mapped_value:
                 continue
-            
+
             function_to_run = mapped_value[0]
             sign = mapped_value[1]
             place_to_change = mapped_value[2]
 
-            new_value = function_to_run(event.value) if sign == "pos" else -function_to_run(event.value)
+            new_value = function_to_run(
+                event.value) if sign == "pos" else -function_to_run(event.value)
             new_value = turn_to_tertiary(new_value)
             # print(f"changing place {place_to_change} to {new_value}")
 
-            new_state = replace_at_index(new_state, place_to_change, str(new_value))
+            new_state = replace_at_index(
+                new_state, place_to_change, str(new_value))
 
     if self_driving and latest_predictions != drone_controller.current_state:
         drone_controller.move_state(latest_predictions)
