@@ -16,4 +16,4 @@ First step is training, in this, we're going to teach a drone how to go through 
 
 ---
 
-> _Project is still a WIP_
+> _Project is still a WIP..._
