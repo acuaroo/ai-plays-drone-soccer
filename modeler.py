@@ -6,8 +6,9 @@ from controller import log
 import tensorflow as tf
 from tensorflow import keras
 
+
 class Model:
-    def __init__(self, model_path, verbose=False):
+    def __init__(self, model_path, verbose):
         super().__init__()
 
         self.model_path = model_path
@@ -20,17 +21,22 @@ class Model:
 
     def infer(self, image):
         image = np.expand_dims(image, axis=0)
-
+        log("modeler is infering image...", "normal")
         predictions = self.model.predict(image)[0]
         predictions = np.argmax(predictions)
 
+        log(f"modeler has infered: {predictions}", "normal")
+
         result = self.detokenizer[predictions]
 
+        log(f"modeler has decoded: {result}", "normal")
+
         if self.verbose:
-            log(f"model inferred: {result}", "normal")
+            log(f"model has finally inferred: {result}", "normal")
 
         return result
 
     def set_model(self, model_path):
         self.model = tf.keras.models.load_model(f"{model_path}/model.h5")
-        self.detokenizer = np.load(f"{model_path}/detokenizer.npy", allow_pickle=True).item()
+        self.detokenizer = np.load(
+            f"{model_path}/detokenizer.npy", allow_pickle=True).item()
