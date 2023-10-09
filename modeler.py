@@ -21,15 +21,10 @@ class Model:
 
     def infer(self, image):
         image = np.expand_dims(image, axis=0)
-        log("modeler is infering image...", "normal")
         predictions = self.model.predict(image)[0]
         predictions = np.argmax(predictions)
 
-        log(f"modeler has infered: {predictions}", "normal")
-
         result = self.detokenizer[predictions]
-
-        log(f"modeler has decoded: {result}", "normal")
 
         if self.verbose:
             log(f"model has finally inferred: {result}", "normal")

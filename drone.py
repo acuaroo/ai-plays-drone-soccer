@@ -30,7 +30,7 @@ drone_controller = DroneController(joystick, verbose=True, mock=False)
 drone_controller.connect()
 drone_controller.set_speed(25)
 
-model = Model("models/VA62_9-6-23", True)
+model = Model("models/LIMVA80_10-9-23", True)
 
 who = input("who's using this session?")
 session_id = f"{who}--{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
@@ -64,7 +64,7 @@ def process_button(event):
     if event.button == 9:
         recording = True
         log("started recording!", "success")
-        Thread(target=joystick.rumble, args=(3000, 3000, 1)).start()
+        # Thread(target=joystick.rumble, args=(3000, 3000, 1)).start()
 
         return True
     elif event.button == 10:
@@ -106,14 +106,17 @@ def camera_loop():
         returned, frame = tello_video.read()
         frame_num += 1
 
+        # print(returned, frame_num % 10, drone_controller.current_state ==
+        #       "0_0_0_0_1", drone_controller.is_flying)
+
         if (returned
-                and frame_num % 10 == 0
-                and not drone_controller.current_state == "0_0_0_0_1"
+            and frame_num % 10 == 0
+            and ((not drone_controller.current_state == "0_0_0_0_1") or self_driving)
                 and drone_controller.is_flying):
 
             height, width, layers = frame.shape
 
-            resize = cv2.resize(frame, (144, 256))
+            resize = cv2.resize(frame, (256, 144))
 
             if self_driving:
                 image_array = np.asarray(resize)
@@ -129,6 +132,13 @@ def camera_loop():
 
                     if drone_controller.verbose:
                         log(f"{amount_of_data} | saved image @ {final_name}", "normal")
+        # except cv2.error as e:
+        #     log(f"decoding error: {str(e)}", "error")
+        #     continue
+
+        # except Exception as ex:
+        #     log(f"an error occurred: {str(ex)}", "error")
+        #     continue
 
 
 def exit_handler():
