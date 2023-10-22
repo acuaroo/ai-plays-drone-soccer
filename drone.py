@@ -30,9 +30,9 @@ drone_controller = DroneController(joystick, verbose=True, mock=False)
 drone_controller.connect()
 drone_controller.set_speed(25)
 
-model = Model("models/VERSION_HERE", verbose=True)
+model = Model("models/LIMVA80_10-9-23", True)
 
-who = input("who's recording this session?")
+who = input("who's using this session?")
 session_id = f"{who}--{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 
 clock = pygame.time.Clock()
@@ -45,12 +45,12 @@ latest_predictions = "0_0_0_0_1"
 action_map = {
     "buttons": {
         2: [8, "1"],
-        1: [8, "0"],
+        0: [8, "0"],
+
+        8: [2, "1"],
+        7: [2, "2"],
     },
     "joysticks": {
-        5: [snap_axis, "pos", 2],
-        4: [snap_axis, "neg", 2],
-
         0: [round, "pos", 4],
         1: [round, "neg", 0],
         2: [round, "pos", 6]
@@ -61,18 +61,18 @@ action_map = {
 def process_button(event):
     global recording, self_driving
 
-    if event.button == 6:
+    if event.button == 9:
         recording = True
         log("started recording!", "success")
-        Thread(target=joystick.rumble, args=(3000, 3000, 1)).start()
+        # Thread(target=joystick.rumble, args=(3000, 3000, 1)).start()
 
         return True
-    elif event.button == 4:
+    elif event.button == 10:
         recording = False
         log("stopped recording!", "success")
 
         return True
-    elif event.button == 15:
+    elif event.button == 4:
         recording = False
         self_driving = not self_driving
 
@@ -106,17 +106,17 @@ def camera_loop():
         returned, frame = tello_video.read()
         frame_num += 1
 
+        # print(returned, frame_num % 10, drone_controller.current_state ==
+        #       "0_0_0_0_1", drone_controller.is_flying)
+
         if (returned
-                and frame_num % 10 == 0
-                and not drone_controller.current_state == "0_0_0_0_1"
+            and frame_num % 10 == 0
+            and ((not drone_controller.current_state == "0_0_0_0_1") or self_driving)
                 and drone_controller.is_flying):
 
             height, width, layers = frame.shape
 
-            new_height = int(height / 2)
-            new_width = int(width / 2)
-
-            resize = cv2.resize(frame, (new_width, new_height))
+            resize = cv2.resize(frame, (256, 144))
 
             if self_driving:
                 image_array = np.asarray(resize)
@@ -132,6 +132,13 @@ def camera_loop():
 
                     if drone_controller.verbose:
                         log(f"{amount_of_data} | saved image @ {final_name}", "normal")
+        # except cv2.error as e:
+        #     log(f"decoding error: {str(e)}", "error")
+        #     continue
+
+        # except Exception as ex:
+        #     log(f"an error occurred: {str(ex)}", "error")
+        #     continue
 
 
 def exit_handler():
@@ -171,6 +178,14 @@ while alive:
 
             new_state = new_state[:place_to_change] + \
                 new_value + new_state[place_to_change + 1:]
+        elif event.type == pygame.JOYBUTTONUP:
+            if event.button == 8 or event.button == 7:
+                place_to_change = mapped_value[0]
+                new_value = "0"
+
+                new_state = new_state[:2] + \
+                    new_value + new_state[2 + 1:]
+
         elif event.type == pygame.JOYAXISMOTION:
             mapped_value = action_map["joysticks"].get(event.axis)
 
@@ -191,5 +206,5 @@ while alive:
 
     if self_driving and latest_predictions != drone_controller.current_state:
         drone_controller.move_state(latest_predictions)
-    elif new_state != drone_controller.current_state:
+    elif new_state != drone_controller.current_state and not self_driving:
         drone_controller.move_state(new_state)
